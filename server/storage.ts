@@ -3,9 +3,14 @@ import {
   type InsertStudent, 
   type Payment, 
   type InsertPayment,
-  type StudentWithBalance 
+  type StudentWithBalance,
+  students as studentsTable,
+  payments as paymentsTable
 } from "@shared/schema";
 import { randomUUID } from "crypto";
+import { drizzle } from "drizzle-orm/neon-http";
+import { neon } from "@neondatabase/serverless";
+import { eq, sql } from "drizzle-orm";
 
 export interface IStorage {
   getAllStudents(): Promise<StudentWithBalance[]>;
@@ -136,4 +141,98 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+export class PgStorage implements IStorage {
+  private db;
+
+  constructor(connectionString: string) {
+    const sql = neon(connectionString);
+    this.db = drizzle(sql);
+  }
+
+  async getAllStudents(): Promise<StudentWithBalance[]> {
+    const students = await this.db.select().from(studentsTable);
+    const studentsWithBalance = await Promise.all(
+      students.map(async (student) => {
+        const payments = await this.getPaymentsByStudentId(student.id);
+        const totalPaid = payments.reduce((sum, payment) => 
+          sum + payment.tuitionFeePaid + payment.booksFeePaid + payment.examFeePaid, 0
+        );
+        const totalFees = student.totalFee + student.booksFee + student.examFee;
+        return {
+          ...student,
+          totalPaid,
+          balance: totalFees - totalPaid,
+        };
+      })
+    );
+    return studentsWithBalance;
+  }
+
+  async getStudent(id: string): Promise<Student | undefined> {
+    const result = await this.db.select().from(studentsTable).where(eq(studentsTable.id, id));
+    return result[0];
+  }
+
+  async getStudentByAdmissionNo(admissionNo: string): Promise<Student | undefined> {
+    const result = await this.db.select().from(studentsTable).where(eq(studentsTable.admissionNo, admissionNo));
+    return result[0];
+  }
+
+  async createStudent(insertStudent: InsertStudent): Promise<Student> {
+    const result = await this.db.insert(studentsTable).values(insertStudent).returning();
+    return result[0];
+  }
+
+  async updateStudent(id: string, updateData: Partial<InsertStudent>): Promise<Student | undefined> {
+    const result = await this.db.update(studentsTable)
+      .set(updateData)
+      .where(eq(studentsTable.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async deleteStudent(id: string): Promise<boolean> {
+    // Delete payments first (cascade)
+    await this.db.delete(paymentsTable).where(eq(paymentsTable.studentId, id));
+    // Then delete student
+    const result = await this.db.delete(studentsTable).where(eq(studentsTable.id, id)).returning();
+    return result.length > 0;
+  }
+
+  async getAllPayments(): Promise<Payment[]> {
+    return await this.db.select().from(paymentsTable);
+  }
+
+  async getPaymentsByStudentId(studentId: string): Promise<Payment[]> {
+    return await this.db.select().from(paymentsTable)
+      .where(eq(paymentsTable.studentId, studentId))
+      .orderBy(paymentsTable.date);
+  }
+
+  async createPayment(insertPayment: InsertPayment): Promise<Payment> {
+    const result = await this.db.insert(paymentsTable).values(insertPayment).returning();
+    return result[0];
+  }
+
+  async getStudentWithBalance(id: string): Promise<StudentWithBalance | undefined> {
+    const student = await this.getStudent(id);
+    if (!student) return undefined;
+
+    const payments = await this.getPaymentsByStudentId(id);
+    const totalPaid = payments.reduce((sum, payment) => 
+      sum + payment.tuitionFeePaid + payment.booksFeePaid + payment.examFeePaid, 0
+    );
+    const totalFees = student.totalFee + student.booksFee + student.examFee;
+    
+    return {
+      ...student,
+      totalPaid,
+      balance: totalFees - totalPaid,
+    };
+  }
+}
+
+// Use PostgreSQL if DATABASE_URL is set, otherwise fall back to in-memory storage
+export const storage = process.env.DATABASE_URL 
+  ? new PgStorage(process.env.DATABASE_URL)
+  : new MemStorage();

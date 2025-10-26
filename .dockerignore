@@ -1,0 +1,29 @@
+# Exclude files not needed in Docker build context
+.git
+.gitignore
+.vscode
+.replit
+replit.md
+WARP.md
+
+# Dependencies and builds
+node_modules
+dist
+build
+
+# Logs and OS junk
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+.DS_Store
+Thumbs.db
+
+# Editor / tooling
+*.swp
+*.swo
+
+# Local env files
+.env
+env/

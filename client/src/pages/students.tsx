@@ -15,10 +15,34 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
+import { SearchInput } from "@/components/ui/search-input";
+import { useMemo, useState } from "react";
+
 export default function Students() {
   const { data: students, isLoading } = useQuery<StudentWithBalance[]>({
     queryKey: ["/api/students"],
   });
+
+  const [q, setQ] = useState("");
+  const filteredStudents = useMemo(() => {
+    const list = students ?? [];
+    const needle = q.trim().toLowerCase();
+    if (!needle) return list;
+    return list.filter((s) => {
+      const hay = [
+        s.studentName,
+        s.admissionNo,
+        s.class,
+        String(s.totalFee + s.booksFee + s.examFee),
+        String(s.totalPaid),
+        String(s.balance),
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+      return hay.includes(needle);
+    });
+  }, [students, q]);
 
   if (isLoading) {
     return (
@@ -36,23 +60,31 @@ export default function Students() {
           <h1 className="text-3xl font-bold" data-testid="text-students-title">Students</h1>
           <p className="text-muted-foreground">Manage student enrollment and fee details</p>
         </div>
-        <Link href="/students/new">
-          <Button data-testid="button-add-student">
-            <Plus className="h-4 w-4" />
-            Add Student
-          </Button>
-        </Link>
+        <div className="flex items-center gap-2">
+          <SearchInput
+            placeholder="Search by name, admission no"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            containerClassName="w-48 md:w-72"
+          />
+          <Link href="/students/new">
+            <Button data-testid="button-add-student">
+              <Plus className="h-4 w-4" />
+              Add Student
+            </Button>
+          </Link>
+        </div>
       </div>
 
       <Card>
         <CardHeader>
           <CardTitle>All Students</CardTitle>
           <CardDescription>
-            {students?.length || 0} student{students?.length !== 1 ? "s" : ""} enrolled
+            {filteredStudents.length} student{filteredStudents.length !== 1 ? "s" : ""} enrolled
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {!students || students.length === 0 ? (
+          {filteredStudents.length === 0 ? (
             <p className="text-muted-foreground text-sm" data-testid="text-no-students">
               No students enrolled yet. Add your first student to get started.
             </p>
@@ -71,7 +103,7 @@ export default function Students() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {students.map((student) => {
+                {filteredStudents.map((student) => {
                   const totalFees = student.totalFee + student.booksFee + student.examFee;
                   const isPaid = student.balance === 0;
                   const isPartiallyPaid = student.totalPaid > 0 && student.balance > 0;

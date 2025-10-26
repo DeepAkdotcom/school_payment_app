@@ -12,6 +12,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
+import { SearchInput } from "@/components/ui/search-input";
+import { useMemo, useState } from "react";
+
 export default function Payments() {
   const { data: payments, isLoading: paymentsLoading } = useQuery<Payment[]>({
     queryKey: ["/api/payments"],
@@ -20,6 +23,36 @@ export default function Payments() {
   const { data: students } = useQuery<StudentWithBalance[]>({
     queryKey: ["/api/students"],
   });
+
+  const [q, setQ] = useState("");
+  const sortedPayments = payments
+    ?.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) || [];
+
+  const filteredPayments = useMemo(() => {
+    const list = sortedPayments;
+    const needle = q.trim().toLowerCase();
+    if (!needle) return list;
+    return list.filter((p) => {
+      const student = students?.find((s) => s.id === p.studentId);
+      const total = p.tuitionFeePaid + p.booksFeePaid + p.examFeePaid;
+      const hay = [
+        student?.studentName,
+        student?.admissionNo,
+        student?.class,
+        p.paymentMode,
+        `#${p.installment}`,
+        String(p.tuitionFeePaid),
+        String(p.booksFeePaid),
+        String(p.examFeePaid),
+        String(total),
+        new Date(p.date).toLocaleDateString(),
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+      return hay.includes(needle);
+    });
+  }, [sortedPayments, students, q]);
 
   if (paymentsLoading) {
     return (
@@ -30,25 +63,31 @@ export default function Payments() {
     );
   }
 
-  const sortedPayments = payments
-    ?.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) || [];
 
   return (
     <div className="p-8 space-y-6">
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold" data-testid="text-payments-title">Payment History</h1>
-        <p className="text-muted-foreground">View all payment transactions</p>
+      <div className="flex flex-col md:flex-row md:flex-wrap md:items-center md:justify-between gap-3 w-full">
+        <div className="space-y-2 min-w-0 flex-1">
+          <h1 className="text-3xl font-bold" data-testid="text-payments-title">Payment History</h1>
+          <p className="text-muted-foreground">View all payment transactions</p>
+        </div>
+        <SearchInput
+          placeholder="Search by student, admission no, mode"
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          containerClassName="w-full md:max-w-xs lg:max-w-md"
+        />
       </div>
 
       <Card>
         <CardHeader>
           <CardTitle>All Payments</CardTitle>
           <CardDescription>
-            {sortedPayments.length} payment{sortedPayments.length !== 1 ? "s" : ""} recorded
+            {filteredPayments.length} payment{filteredPayments.length !== 1 ? "s" : ""} recorded
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {sortedPayments.length === 0 ? (
+          {filteredPayments.length === 0 ? (
             <p className="text-muted-foreground text-sm" data-testid="text-no-payments">
               No payments recorded yet
             </p>
@@ -69,7 +108,7 @@ export default function Payments() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {sortedPayments.map((payment) => {
+                {filteredPayments.map((payment) => {
                   const student = students?.find((s) => s.id === payment.studentId);
                   const total = payment.tuitionFeePaid + payment.booksFeePaid + payment.examFeePaid;
                   return (

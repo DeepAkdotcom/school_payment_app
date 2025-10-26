@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: vocabfeast
+    env: node
+    plan: free
+    # Optional: pick a close region (examples: singapore, frankfurt, ohio)
+    # region: singapore
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/students
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: 20
+      # Set this in the Render dashboard (or via render CLI). Leave out of source control.
+      - key: DATABASE_URL
+      sync: false
