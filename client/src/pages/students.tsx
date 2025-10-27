@@ -46,7 +46,7 @@ export default function Students() {
 
   if (isLoading) {
     return (
-      <div className="p-8 space-y-6">
+      <div className="p-4 md:p-8 space-y-6">
         <Skeleton className="h-8 w-64" />
         <Skeleton className="h-96" />
       </div>
@@ -54,8 +54,8 @@ export default function Students() {
   }
 
   return (
-    <div className="p-8 space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="p-4 md:p-8 space-y-6">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
         <div className="space-y-2">
           <h1 className="text-3xl font-bold" data-testid="text-students-title">Students</h1>
           <p className="text-muted-foreground">Manage student enrollment and fee details</p>
@@ -65,7 +65,7 @@ export default function Students() {
             placeholder="Search by name, admission no"
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            containerClassName="w-48 md:w-72"
+            containerClassName="w-full sm:w-64 md:w-72"
           />
           <Link href="/students/new">
             <Button data-testid="button-add-student">
@@ -94,12 +94,12 @@ export default function Students() {
                 <TableRow>
                   <TableHead>Admission No</TableHead>
                   <TableHead>Student Name</TableHead>
-                  <TableHead>Class</TableHead>
-                  <TableHead className="text-right">Total Fees</TableHead>
-                  <TableHead className="text-right">Paid</TableHead>
+                  <TableHead className="hidden md:table-cell">Class</TableHead>
+                  <TableHead className="hidden md:table-cell text-right">Total Fees</TableHead>
+                  <TableHead className="hidden md:table-cell text-right">Paid</TableHead>
                   <TableHead className="text-right">Balance</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead className="hidden md:table-cell">Status</TableHead>
+                  <TableHead className="hidden md:table-cell text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -114,13 +114,13 @@ export default function Students() {
                         {student.admissionNo}
                       </TableCell>
                       <TableCell>{student.studentName}</TableCell>
-                      <TableCell>{student.class}</TableCell>
-                      <TableCell className="text-right">₹{totalFees.toLocaleString()}</TableCell>
-                      <TableCell className="text-right">₹{student.totalPaid.toLocaleString()}</TableCell>
+                      <TableCell className="hidden md:table-cell">{student.class}</TableCell>
+                      <TableCell className="hidden md:table-cell text-right">₹{totalFees.toLocaleString()}</TableCell>
+                      <TableCell className="hidden md:table-cell text-right">₹{student.totalPaid.toLocaleString()}</TableCell>
                       <TableCell className="text-right font-bold">
                         ₹{student.balance.toLocaleString()}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="hidden md:table-cell">
                         {isPaid ? (
                           <Badge variant="secondary" data-testid={`status-${student.admissionNo}`}>Paid</Badge>
                         ) : isPartiallyPaid ? (
@@ -129,7 +129,7 @@ export default function Students() {
                           <Badge variant="destructive" data-testid={`status-${student.admissionNo}`}>Pending</Badge>
                         )}
                       </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="hidden md:table-cell text-right">
                         <Link href={`/students/${student.id}`}>
                           <Button variant="ghost" size="sm" data-testid={`button-view-${student.admissionNo}`}>
                             <Eye className="h-4 w-4" />

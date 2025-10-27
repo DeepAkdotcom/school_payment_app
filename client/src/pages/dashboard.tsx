@@ -15,7 +15,7 @@ export default function Dashboard() {
 
   if (studentsLoading || paymentsLoading) {
     return (
-      <div className="p-8 space-y-6">
+      <div className="p-4 md:p-8 space-y-6">
         <div className="space-y-2">
           <Skeleton className="h-8 w-64" />
           <Skeleton className="h-4 w-96" />
@@ -39,7 +39,7 @@ export default function Dashboard() {
     .slice(0, 5) || [];
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="p-4 md:p-8 space-y-6">
       <div className="space-y-2">
         <h1 className="text-3xl font-bold" data-testid="text-dashboard-title">Dashboard</h1>
         <p className="text-muted-foreground">Financial overview and summary</p>
@@ -52,7 +52,7 @@ export default function Dashboard() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold" data-testid="text-total-students">{totalStudents}</div>
+            <div className="text-xl md:text-2xl font-bold" data-testid="text-total-students">{totalStudents}</div>
           </CardContent>
         </Card>
 
@@ -62,7 +62,7 @@ export default function Dashboard() {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-status-online" data-testid="text-total-collected">₹{totalCollected.toLocaleString()}</div>
+            <div className="text-xl md:text-2xl font-bold text-status-online" data-testid="text-total-collected">₹{totalCollected.toLocaleString()}</div>
           </CardContent>
         </Card>
 
@@ -72,7 +72,7 @@ export default function Dashboard() {
             <IndianRupee className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-destructive" data-testid="text-outstanding-balance">₹{totalOutstanding.toLocaleString()}</div>
+            <div className="text-xl md:text-2xl font-bold text-destructive" data-testid="text-outstanding-balance">₹{totalOutstanding.toLocaleString()}</div>
           </CardContent>
         </Card>
 
@@ -82,7 +82,7 @@ export default function Dashboard() {
             <AlertCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold" data-testid="text-pending-payments">{studentsWithBalance}</div>
+            <div className="text-xl md:text-2xl font-bold" data-testid="text-pending-payments">{studentsWithBalance}</div>
           </CardContent>
         </Card>
       </div>

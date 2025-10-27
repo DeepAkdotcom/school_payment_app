@@ -56,7 +56,7 @@ export default function Payments() {
 
   if (paymentsLoading) {
     return (
-      <div className="p-8 space-y-6">
+      <div className="p-4 md:p-8 space-y-6">
         <Skeleton className="h-8 w-64" />
         <Skeleton className="h-96" />
       </div>
@@ -65,7 +65,7 @@ export default function Payments() {
 
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="p-4 md:p-8 space-y-6">
       <div className="flex flex-col md:flex-row md:flex-wrap md:items-center md:justify-between gap-3 w-full">
         <div className="space-y-2 min-w-0 flex-1">
           <h1 className="text-3xl font-bold" data-testid="text-payments-title">Payment History</h1>
@@ -97,14 +97,14 @@ export default function Payments() {
                 <TableRow>
                   <TableHead>Date</TableHead>
                   <TableHead>Student</TableHead>
-                  <TableHead>Admission No</TableHead>
-                  <TableHead>Class</TableHead>
-                  <TableHead>Installment</TableHead>
-                  <TableHead className="text-right">Tuition</TableHead>
-                  <TableHead className="text-right">Books</TableHead>
-                  <TableHead className="text-right">Exam</TableHead>
+                  <TableHead className="hidden md:table-cell">Admission No</TableHead>
+                  <TableHead className="hidden md:table-cell">Class</TableHead>
+                  <TableHead className="hidden md:table-cell">Installment</TableHead>
+                  <TableHead className="hidden md:table-cell text-right">Tuition</TableHead>
+                  <TableHead className="hidden md:table-cell text-right">Books</TableHead>
+                  <TableHead className="hidden md:table-cell text-right">Exam</TableHead>
                   <TableHead className="text-right">Total</TableHead>
-                  <TableHead>Mode</TableHead>
+                  <TableHead className="hidden md:table-cell">Mode</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -115,16 +115,16 @@ export default function Payments() {
                     <TableRow key={payment.id} data-testid={`payment-row-${payment.id}`}>
                       <TableCell>{new Date(payment.date).toLocaleDateString()}</TableCell>
                       <TableCell className="font-medium">{student?.studentName || "Unknown"}</TableCell>
-                      <TableCell>{student?.admissionNo || "-"}</TableCell>
-                      <TableCell>{student?.class || "-"}</TableCell>
-                      <TableCell>
+                      <TableCell className="hidden md:table-cell">{student?.admissionNo || "-"}</TableCell>
+                      <TableCell className="hidden md:table-cell">{student?.class || "-"}</TableCell>
+                      <TableCell className="hidden md:table-cell">
                         <Badge variant="outline">#{payment.installment}</Badge>
                       </TableCell>
-                      <TableCell className="text-right">₹{payment.tuitionFeePaid.toLocaleString()}</TableCell>
-                      <TableCell className="text-right">₹{payment.booksFeePaid.toLocaleString()}</TableCell>
-                      <TableCell className="text-right">₹{payment.examFeePaid.toLocaleString()}</TableCell>
+                      <TableCell className="hidden md:table-cell text-right">₹{payment.tuitionFeePaid.toLocaleString()}</TableCell>
+                      <TableCell className="hidden md:table-cell text-right">₹{payment.booksFeePaid.toLocaleString()}</TableCell>
+                      <TableCell className="hidden md:table-cell text-right">₹{payment.examFeePaid.toLocaleString()}</TableCell>
                       <TableCell className="text-right font-bold">₹{total.toLocaleString()}</TableCell>
-                      <TableCell>{payment.paymentMode}</TableCell>
+                      <TableCell className="hidden md:table-cell">{payment.paymentMode}</TableCell>
                     </TableRow>
                   );
                 })}
