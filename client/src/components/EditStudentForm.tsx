@@ -41,7 +41,61 @@ export function EditStudentForm({ student, onSuccess }: { student: StudentWithBa
     },
   });
 
-  const onSubmit = (data: InsertStudent) => mutate(data);
+ const getClassSuffix = (numStr: string): string => {
+    // Attempt to parse the string as an integer
+    const num = parseInt(numStr, 10);
+    
+    // Check if it's a valid number. If not, default to "th" for non-LKG/UKG strings.
+    if (isNaN(num)) {
+        return "th"; 
+    }
+
+    // Special cases: 11th, 12th, 13th
+    const lastTwoDigits = num % 100;
+    if (lastTwoDigits >= 11 && lastTwoDigits <= 13) {
+        return "th";
+    }
+
+    // General cases based on the last digit
+    const lastDigit = num % 10;
+    switch (lastDigit) {
+        case 1:
+            return "st";
+        case 2:
+            return "nd";
+        case 3:
+            return "rd";
+        default:
+            return "th";
+    }
+};
+
+
+const onSubmit = (data: InsertStudent) => {
+    const className = (data.class || "").trim();
+
+    // 1. Define classes that should NOT have any suffix.
+    const nonSuffixClasses = ["LKG", "UKG", "NURSERY", "PREP", "PLAYGROUP"]; 
+    
+    // 2. Remove any existing ordinal suffix (th, st, nd, rd)
+    const cleanedClass = className.replace(/(st|nd|rd|th)$/i, "");
+    
+    // 3. Convert to uppercase for case-insensitive comparison
+    const upperCleanedClass = cleanedClass.toUpperCase();
+    
+    let normalizedClass;
+
+    if (nonSuffixClasses.includes(upperCleanedClass)) {
+        // Case A: LKG, UKG, etc. -> Use the cleaned class as is.
+        normalizedClass = upperCleanedClass;
+    } else {
+        // Case B: Numeric or other classes -> Determine and append the correct suffix.
+        const suffix = getClassSuffix(cleanedClass);
+        normalizedClass = cleanedClass + suffix;
+    }
+
+    mutate({ ...data, class: normalizedClass });
+};
 
   return (
     <Form {...form}>

@@ -50,7 +50,7 @@ export default function Students() {
       const hay = [
         s.studentName,
         s.admissionNo,
-        s.class,
+        s["class"],
         String(s.totalFee + s.booksFee + s.examFee),
         String(s.totalPaid),
         String(s.balance),
@@ -80,7 +80,7 @@ export default function Students() {
         </div>
         <div className="flex items-center gap-2">
           <SearchInput
-            placeholder="Search by name, admission no"
+            placeholder="Search by name, admission no, class"
             value={q}
             onChange={(e) => setQ(e.target.value)}
             containerClassName="w-full sm:w-64 md:w-72"
@@ -132,7 +132,7 @@ export default function Students() {
                         {student.admissionNo}
                       </TableCell>
                       <TableCell>{student.studentName}</TableCell>
-                      <TableCell className="hidden md:table-cell">{student.class}</TableCell>
+                      <TableCell className="hidden md:table-cell">{student["class"]}</TableCell>
                       <TableCell className="hidden md:table-cell text-right">₹{totalFees.toLocaleString()}</TableCell>
                       <TableCell className="hidden md:table-cell text-right">₹{student.totalPaid.toLocaleString()}</TableCell>
                       <TableCell className="text-right font-bold">

@@ -59,9 +59,63 @@ export default function StudentForm() {
     },
   });
 
-  const onSubmit = (data: InsertStudent) => {
-    createStudentMutation.mutate(data);
-  };
+  // Helper function to determine the correct ordinal suffix (st, nd, rd, th)
+const getClassSuffix = (classStr: string): string => {
+    // Attempt to parse the string as an integer
+    const num = parseInt(classStr, 10);
+    
+    // If it's not a valid number, we'll default to 'th' later or let the exception logic handle it.
+    if (isNaN(num)) {
+        return "th"; 
+    }
+
+    // Special cases: 11th, 12th, 13th
+    const lastTwoDigits = num % 100;
+    if (lastTwoDigits >= 11 && lastTwoDigits <= 13) {
+        return "th";
+    }
+
+    // General cases based on the last digit
+    const lastDigit = num % 10;
+    switch (lastDigit) {
+        case 1:
+            return "st";
+        case 2:
+            return "nd";
+        case 3:
+            return "rd";
+        default:
+            return "th";
+    }
+};
+
+
+const onSubmit = (data: InsertStudent) => {
+    const className = (data.class || "").trim();
+
+    // 1. Define classes that should NOT have any suffix (LKG, UKG, Nursery, etc.).
+    const nonSuffixClasses = ["LKG", "UKG", "NURSERY", "PREP", "PLAYGROUP"]; 
+    
+    // 2. Remove any existing ordinal suffix (th, st, nd, rd) for a clean base.
+    const cleanedClass = className.replace(/(st|nd|rd|th)$/i, "");
+    
+    // 3. Convert to uppercase for case-insensitive comparison against the exception list.
+    const upperCleanedClass = cleanedClass.toUpperCase();
+    
+    let normalizedClass;
+
+    if (nonSuffixClasses.includes(upperCleanedClass)) {
+        // Case A: Exception classes (LKG, UKG) -> Use the cleaned class as is.
+        normalizedClass = upperCleanedClass;
+    } else {
+        // Case B: Numeric or other classes -> Determine and append the correct suffix.
+        const suffix = getClassSuffix(cleanedClass);
+        normalizedClass = cleanedClass + suffix;
+    }
+
+    // Use the correct mutation variable from your snippet
+    createStudentMutation.mutate({ ...data, class: normalizedClass });
+};
 
   return (
     <div className="p-8 space-y-6">
