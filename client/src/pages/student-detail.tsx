@@ -1,10 +1,10 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useRoute, useLocation } from "wouter";
-import { type StudentWithBalance, type Payment, insertPaymentSchema, type InsertPayment, insertStudentSchema, type InsertStudent } from "@shared/schema";
+import { type StudentWithBalance, type Payment, insertPaymentSchema, type InsertPayment } from "@shared/schema";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Plus, Receipt, Pencil, Trash } from "lucide-react";
+import { ArrowLeft, Plus, Receipt } from "lucide-react";
 import { Link } from "wouter";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -49,7 +49,6 @@ export default function StudentDetail() {
   const [, params] = useRoute("/students/:id");
   const studentId = params?.id;
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
-  const [showEditDialog, setShowEditDialog] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
   const receiptRef = useRef<HTMLDivElement>(null);
   const [, setLocation] = useLocation();
@@ -63,20 +62,6 @@ export default function StudentDetail() {
   const { data: payments } = useQuery<Payment[]>({
     queryKey: ["/api/students", studentId, "payments"],
     enabled: !!studentId,
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: async () => {
-      await apiRequest("DELETE", `/api/students/${studentId}`);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/students"] });
-      toast({ title: "Deleted", description: "Student deleted successfully" });
-      setLocation("/students");
-    },
-    onError: (error: any) => {
-      toast({ title: "Error", description: error.message || "Failed to delete student", variant: "destructive" });
-    },
   });
 
   if (isLoading) {
@@ -111,26 +96,9 @@ export default function StudentDetail() {
           <p className="text-muted-foreground">Admission No: {student.admissionNo} | Class: {student.class}</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => setShowEditDialog(true)} data-testid="button-edit-student">
-            <Pencil className="h-4 w-4" />
-            Edit
-          </Button>
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={() => {
-              if (confirm("Are you sure you want to delete this student? This will remove all payments as well.")) {
-                deleteMutation.mutate();
-              }
-            }}
-            data-testid="button-delete-student"
-          >
-            <Trash className="h-4 w-4" />
-            Delete
-          </Button>
           <Dialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
             <DialogTrigger asChild>
-              <Button data-testid="button-record-payment">
+              <Button variant="action" data-testid="button-record-payment">
                 <Plus className="h-4 w-4" />
                 Record Payment
               </Button>
@@ -154,20 +122,6 @@ export default function StudentDetail() {
         </div>
       </div>
 
-      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Edit Student</DialogTitle>
-            <DialogDescription>Update student details</DialogDescription>
-          </DialogHeader>
-          <EditStudentForm
-            student={student}
-            onSuccess={() => {
-              setShowEditDialog(false);
-            }}
-          />
-        </DialogContent>
-      </Dialog>
 
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
@@ -548,170 +502,3 @@ function ReceiptView({ student, payment }: { student: StudentWithBalance; paymen
   );
 }
 
-function EditStudentForm({ student, onSuccess }: { student: StudentWithBalance; onSuccess: () => void }) {
-  const form = useForm<InsertStudent>({
-    resolver: zodResolver(insertStudentSchema),
-    defaultValues: {
-      admissionNo: student.admissionNo,
-      studentName: student.studentName,
-      parentName: student.parentName,
-      class: student.class,
-      totalFee: student.totalFee,
-      booksFee: student.booksFee,
-      examFee: student.examFee,
-      academicYear: student.academicYear,
-    },
-  });
-
-  const { mutate, isPending } = useMutation({
-    mutationFn: async (data: InsertStudent) => {
-      const res = await apiRequest("PUT", `/api/students/${student.id}`, data);
-      return res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/students"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/students", student.id] });
-      onSuccess();
-    },
-  });
-
-  const onSubmit = (data: InsertStudent) => mutate(data);
-
-  return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <div className="grid gap-4 md:grid-cols-2">
-          <FormField
-            control={form.control}
-            name="admissionNo"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Admission Number</FormLabel>
-                <FormControl>
-                  <Input {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="academicYear"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Academic Year</FormLabel>
-                <FormControl>
-                  <Input {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="studentName"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Student Name</FormLabel>
-                <FormControl>
-                  <Input {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="parentName"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Parent Name</FormLabel>
-                <FormControl>
-                  <Input {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="class"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Class</FormLabel>
-                <FormControl>
-                  <Input {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="totalFee"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Tuition Fee (₹)</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    {...field}
-                    onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="booksFee"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Books Fee (₹)</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    {...field}
-                    onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="examFee"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Exam Fee (₹)</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    {...field}
-                    onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        <div className="flex gap-2 justify-end">
-          <Button type="submit" disabled={isPending} data-testid="button-save-student">
-            {isPending ? "Saving..." : "Save"}
-          </Button>
-        </div>
-      </form>
-    </Form>
-  );
-}

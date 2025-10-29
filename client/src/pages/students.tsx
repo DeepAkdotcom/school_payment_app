@@ -1,8 +1,8 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { type StudentWithBalance } from "@shared/schema";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, Eye } from "lucide-react";
+import { Plus, Eye, Pencil, Trash } from "lucide-react";
 import { Link } from "wouter";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
@@ -14,16 +14,34 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { EditStudentForm } from "@/components/EditStudentForm";
 import { SearchInput } from "@/components/ui/search-input";
 import { useMemo, useState } from "react";
+import { queryClient, apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Students() {
   const { data: students, isLoading } = useQuery<StudentWithBalance[]>({
     queryKey: ["/api/students"],
   });
-
+  const { toast } = useToast();
   const [q, setQ] = useState("");
+  const [editStudent, setEditStudent] = useState<StudentWithBalance | null>(null);
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      await apiRequest("DELETE", `/api/students/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/students"] });
+      toast({ title: "Deleted", description: "Student deleted successfully" });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message || "Failed to delete student", variant: "destructive" });
+    },
+  });
+
   const filteredStudents = useMemo(() => {
     const list = students ?? [];
     const needle = q.trim().toLowerCase();
@@ -68,7 +86,7 @@ export default function Students() {
             containerClassName="w-full sm:w-64 md:w-72"
           />
           <Link href="/students/new">
-            <Button data-testid="button-add-student">
+            <Button  variant="action" data-testid="button-add-student">
               <Plus className="h-4 w-4" />
               Add Student
             </Button>
@@ -130,12 +148,36 @@ export default function Students() {
                         )}
                       </TableCell>
                       <TableCell className="hidden md:table-cell text-right">
-                        <Link href={`/students/${student.id}`}>
-                          <Button variant="ghost" size="sm" data-testid={`button-view-${student.admissionNo}`}>
-                            <Eye className="h-4 w-4" />
-                            View
+                        <div className="flex items-center justify-end gap-2">
+                          <Link href={`/students/${student.id}`}>
+                            <Button variant="ghost" size="sm" data-testid={`button-view-${student.admissionNo}`}>
+                              <Eye className="h-4 w-4" />
+                              View
+                            </Button>
+                          </Link>
+                          <Button
+                            variant="default"
+                            size="sm"
+                            onClick={() => setEditStudent(student)}
+                            data-testid={`button-edit-${student.admissionNo}`}
+                          >
+                            <Pencil className="h-4 w-4" />
+                            Edit
                           </Button>
-                        </Link>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => {
+                              if (confirm("Are you sure you want to delete this student? This will remove all payments as well.")) {
+                                deleteMutation.mutate(student.id);
+                              }
+                            }}
+                            data-testid={`button-delete-${student.admissionNo}`}
+                          >
+                            <Trash className="h-4 w-4" />
+                            Delete
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   );
@@ -145,6 +187,20 @@ export default function Students() {
           )}
         </CardContent>
       </Card>
+
+      <Dialog open={!!editStudent} onOpenChange={() => setEditStudent(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Edit Student</DialogTitle>
+          </DialogHeader>
+          {editStudent && (
+            <EditStudentForm
+              student={editStudent}
+              onSuccess={() => setEditStudent(null)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

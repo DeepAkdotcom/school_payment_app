@@ -21,7 +21,17 @@ const buttonVariants = cva(
         secondary: "border bg-secondary text-secondary-foreground border border-secondary-border ",
         // Add a transparent border so that when someone toggles a border on later, it doesn't shift layout/size.
         ghost: "border border-transparent",
+
+        // 1. ACTION (Vibrant Blue/Indigo) - Great for "Add" or "New"
+        action:
+          "bg-indigo-600 text-white border-2 border-indigo-700 shadow-md shadow-indigo-500/50 hover:bg-indigo-700 active:bg-indigo-800 transition-colors",
+
+        // 2. SUCCESS (Deep Green) - Great for "Save" or "Confirm Payment"
+        success:
+          "bg-green-600 text-white border-2 border-green-700 shadow-md shadow-green-500/50 hover:bg-green-700 active:bg-green-800 transition-colors",
+
       },
+      
       // Heights are set as "min" heights, because sometimes Ai will place large amount of content
       // inside buttons. With a min-height they will look appropriate with small amounts of content,
       // but will expand to fit large amounts of content.
