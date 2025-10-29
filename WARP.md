@@ -185,7 +185,7 @@ npm start          # Start production server (requires build first)
 
 **Real-time Balance**: Balance is calculated dynamically, never stored. This prevents inconsistencies but requires joining payment records on every student query.
 
-**Academic Year**: Defaults to "2024-2025" but can be customized per student. No multi-year reporting currently implemented.
+**Academic Year**: Defaults to "2025-2026" but can be customized per student. No multi-year reporting currently implemented.
 
 **Receipt Generation**: Client-side formatting matches official school template. Logic lives in student detail page component.
 

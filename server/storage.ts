@@ -76,7 +76,7 @@ export class MemStorage implements IStorage {
       totalFee: insertStudent.totalFee ?? 0,
       booksFee: insertStudent.booksFee ?? 0,
       examFee: insertStudent.examFee ?? 0,
-      academicYear: insertStudent.academicYear ?? "2024-2025",
+      academicYear: insertStudent.academicYear ?? "2025-2026",
     };
     this.students.set(id, student);
     return student;

@@ -86,7 +86,7 @@ This is a full-stack fee management application built for Sri Sudha Vidyaniketan
   - admissionNo (unique text, e.g., "240001")
   - studentName, parentName, class (text)
   - totalFee, booksFee, examFee (integers in rupees)
-  - academicYear (text, default "2024-2025")
+  - academicYear (text, default "2025-2026")
 
 - **payments** table:
   - id (UUID primary key)

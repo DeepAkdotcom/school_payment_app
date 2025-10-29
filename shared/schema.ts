@@ -12,7 +12,7 @@ export const students = pgTable("students", {
   totalFee: integer("total_fee").notNull().default(0),
   booksFee: integer("books_fee").notNull().default(0),
   examFee: integer("exam_fee").notNull().default(0),
-  academicYear: text("academic_year").notNull().default("2024-2025"),
+  academicYear: text("academic_year").notNull().default("2025-2026"),
 });
 
 export const payments = pgTable("payments", {

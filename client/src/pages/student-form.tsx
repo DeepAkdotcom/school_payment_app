@@ -33,7 +33,7 @@ export default function StudentForm() {
       totalFee: 0,
       booksFee: 0,
       examFee: 0,
-      academicYear: "2024-2025",
+      academicYear: "2025-2026",
     },
   });
 
@@ -107,7 +107,7 @@ export default function StudentForm() {
                     <FormItem>
                       <FormLabel>Academic Year</FormLabel>
                       <FormControl>
-                        <Input placeholder="2024-2025" {...field} data-testid="input-academic-year" />
+                        <Input placeholder="2025-2026" {...field} data-testid="input-academic-year" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
