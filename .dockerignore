@@ -2,9 +2,6 @@
 .git
 .gitignore
 .vscode
-.replit
-replit.md
-WARP.md
 
 # Dependencies and builds
 node_modules
