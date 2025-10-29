@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { type StudentWithBalance, type Payment } from "@shared/schema";
-import { IndianRupee, Users, TrendingUp, AlertCircle } from "lucide-react";
+import { IndianRupee, Users, TrendingUp, AlertCircle, Banknote } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Dashboard() {
@@ -32,6 +32,7 @@ export default function Dashboard() {
   const totalStudents = students?.length || 0;
   const totalOutstanding = students?.reduce((sum, s) => sum + s.balance, 0) || 0;
   const totalCollected = students?.reduce((sum, s) => sum + s.totalPaid, 0) || 0;
+  const totalFeesAll = students?.reduce((sum, s) => sum + s.totalFee + s.booksFee + s.examFee, 0) || 0;
   const studentsWithBalance = students?.filter((s) => s.balance > 0).length || 0;
 
   const recentPayments = payments
@@ -52,7 +53,17 @@ export default function Dashboard() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-xl md:text-2xl font-bold" data-testid="text-total-students">{totalStudents}</div>
+            <div className="text-xl md:text-2xl text-stone-400 font-bold" data-testid="text-total-students">{totalStudents}</div>
+          </CardContent>
+        </Card>
+
+         <Card>
+          <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Overall Fees</CardTitle>
+            <Banknote className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-xl md:text-2xl text-yellow-500 font-bold" data-testid="text-total-fees-all">₹{totalFeesAll.toLocaleString()}</div>
           </CardContent>
         </Card>
 
@@ -76,15 +87,15 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        <Card>
+        {/* <Card>
           <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pending Payments</CardTitle>
+            <CardTitle className="text-sm font-medium">Students With Balance</CardTitle>
             <AlertCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-xl md:text-2xl font-bold" data-testid="text-pending-payments">{studentsWithBalance}</div>
+            <div className="text-xl md:text-2xl font-bold" data-testid="text-students-with-balance">{studentsWithBalance}</div>
           </CardContent>
-        </Card>
+        </Card> */}
       </div>
 
       <Card>

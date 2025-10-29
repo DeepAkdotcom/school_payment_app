@@ -210,7 +210,16 @@ export class PgStorage implements IStorage {
   }
 
   async createPayment(insertPayment: InsertPayment): Promise<Payment> {
-    const result = await this.db.insert(paymentsTable).values(insertPayment).returning();
+    const payload = {
+      studentId: insertPayment.studentId,
+      installment: insertPayment.installment,
+      paymentMode: insertPayment.paymentMode,
+      date: insertPayment.date ? new Date(insertPayment.date as any) : new Date(),
+      tuitionFeePaid: insertPayment.tuitionFeePaid ?? 0,
+      booksFeePaid: insertPayment.booksFeePaid ?? 0,
+      examFeePaid: insertPayment.examFeePaid ?? 0,
+    };
+    const result = await this.db.insert(paymentsTable).values(payload).returning();
     return result[0];
   }
 
